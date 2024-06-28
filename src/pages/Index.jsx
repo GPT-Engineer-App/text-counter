@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import * as XLSX from "xlsx";
+import mammoth from "mammoth";
+import pdfParse from "pdf-parse";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,15 +17,46 @@ const Index = () => {
     setText(inputText);
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setFile(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const fileText = event.target.result;
-      setText(fileText);
-    };
-    reader.readAsText(file, "utf-8");
+    const fileText = await readFileContent(file);
+    setText(fileText);
+  };
+
+  const readFileContent = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const fileType = file.type;
+        let fileText = "";
+
+        if (fileType.includes("text")) {
+          fileText = event.target.result;
+        } else if (fileType.includes("spreadsheetml")) {
+          const workbook = XLSX.read(event.target.result, { type: "binary" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          fileText = XLSX.utils.sheet_to_csv(sheet);
+        } else if (fileType.includes("wordprocessingml")) {
+          const result = await mammoth.extractRawText({ arrayBuffer: event.target.result });
+          fileText = result.value;
+        } else if (fileType.includes("pdf")) {
+          const pdfData = await pdfParse(event.target.result);
+          fileText = pdfData.text;
+        }
+
+        resolve(fileText);
+      };
+
+      if (file.type.includes("spreadsheetml")) {
+        reader.readAsBinaryString(file);
+      } else if (file.type.includes("wordprocessingml") || file.type.includes("pdf")) {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file, "utf-8");
+      }
+    });
   };
 
   const countWords = (inputText) => {
