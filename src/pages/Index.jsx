@@ -1,14 +1,68 @@
-// Update this page (the content is just a fallback if you fail and example)
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const Index = () => {
+  const [text, setText] = useState("");
+  const [file, setFile] = useState(null);
+  const [wordCount, setWordCount] = useState({ chinese: 0, english: 0 });
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setText(event.target.result);
+    };
+    reader.readAsText(file);
+  };
+
+  const countWords = (inputText) => {
+    const chineseChars = inputText.match(/[\u4e00-\u9fff]/g) || [];
+    const englishChars = inputText.match(/[a-zA-Z]/g) || [];
+    setWordCount({
+      chinese: chineseChars.length,
+      english: englishChars.length,
+    });
+  };
+
+  const handleCountWords = () => {
+    countWords(text);
+  };
+
   return (
-    <div className="h-screen w-screen flex items-center justify-center">
-      {/* Update with components here - default to put new layout sections as separate components in the components folder, and import them here */}
-      <div>
-        <h1 className="text-3xl text-center">Your Blank Canvas</h1>
-        <p className="text-center">
-          Chat with the agent to start making edits.
-        </p>
+    <div className="h-screen w-screen flex flex-col items-center justify-center space-y-4">
+      <h1 className="text-3xl text-center">Word Count Tool</h1>
+      <div className="w-1/2 space-y-4">
+        <Label htmlFor="text-input">Enter Text:</Label>
+        <Textarea
+          id="text-input"
+          value={text}
+          onChange={handleTextChange}
+          placeholder="Type or paste your text here..."
+          className="w-full"
+        />
+        <Label htmlFor="file-input">Or Upload a File:</Label>
+        <Input
+          id="file-input"
+          type="file"
+          onChange={handleFileChange}
+          className="w-full"
+        />
+        <Button onClick={handleCountWords} className="w-full mt-4">
+          Count Words
+        </Button>
+        <div className="mt-4">
+          <h2 className="text-xl">Word Count Results:</h2>
+          <p>Chinese Characters: {wordCount.chinese}</p>
+          <p>English Characters: {wordCount.english}</p>
+        </div>
       </div>
     </div>
   );
