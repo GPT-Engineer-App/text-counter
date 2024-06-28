@@ -10,7 +10,7 @@ const Index = () => {
   const [wordCount, setWordCount] = useState({ chinese: 0, english: 0 });
 
   const handleTextChange = (e) => {
-    const inputText = new TextDecoder("utf-8").decode(new TextEncoder().encode(e.target.value));
+    const inputText = e.target.value;
     setText(inputText);
   };
 
@@ -19,7 +19,7 @@ const Index = () => {
     setFile(file);
     const reader = new FileReader();
     reader.onload = (event) => {
-      const fileText = new TextDecoder("utf-8").decode(new TextEncoder().encode(event.target.result));
+      const fileText = event.target.result;
       setText(fileText);
     };
     reader.readAsText(file, "utf-8");
