@@ -24,11 +24,15 @@ const Index = () => {
   };
 
   const countWords = (inputText) => {
+    // Match Chinese characters
     const chineseChars = inputText.match(/[\u4e00-\u9fff]/g) || [];
-    const englishChars = inputText.match(/[a-zA-Z]/g) || [];
+    
+    // Match English words
+    const englishWords = inputText.match(/\b[a-zA-Z]+\b/g) || [];
+    
     setWordCount({
       chinese: chineseChars.length,
-      english: englishChars.length,
+      english: englishWords.length,
     });
   };
 
